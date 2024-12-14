@@ -1,0 +1,131 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// Create a new database
+
+//ตำแหน่ง
+model Role {
+  id        Int       @id @default(autoincrement())
+  name      String
+  student   Student[]
+  teacher   Teacher[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+//ห้องเรียน
+model Classroom {
+  id        Int         @id @default(autoincrement())
+  name      String
+  student   Student[]
+  teacher   Teacher[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  Timetable Timetable[]
+}
+
+//นักเรียน
+model Student {
+  id          Int       @id @default(autoincrement())
+  code        String    @unique
+  name        String
+  role        Role      @relation(fields: [roleId], references: [id])
+  roleId      Int
+  phone       String
+  email       String    @unique
+  password    String
+  classroomId Int
+  classroom   Classroom @relation(fields: [classroomId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  GPA         GPA[]
+}
+
+//ครู
+model Teacher {
+  id          Int       @id @default(autoincrement())
+  code        String    @unique
+  name        String
+  role        Role      @relation(fields: [roleId], references: [id])
+  roleId      Int
+  phone       String
+  email       String    @unique
+  password    String
+  classroomId Int
+  classroom   Classroom @relation(fields: [classroomId], references: [id])
+  Subject     Subject[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+//หน่วยกิต
+model Credit {
+  id        Int       @id @default(autoincrement())
+  name      String
+  subject   Subject[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+//วิชาเรียน
+model Subject {
+  id        Int         @id @default(autoincrement())
+  code      String      @unique
+  name      String
+  creditId  Int
+  credit    Credit      @relation(fields: [creditId], references: [id])
+  teacherId Int
+  teacher   Teacher     @relation(fields: [teacherId], references: [id])
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  Category  Category[]
+  Timetable Timetable[]
+  GPA       GPA[]
+}
+
+//หมวดหมู่วิชา
+model Category {
+  id        Int       @id @default(autoincrement())
+  name      String
+  subject   Subject[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+//ตารางเรียน
+model Timetable {
+  id          Int       @id @default(autoincrement())
+  day         String
+  startTime   DateTime
+  endTime     DateTime
+  classroomId Int
+  subjectId   Int
+  subject     Subject   @relation(fields: [subjectId], references: [id])
+  classroom   Classroom @relation(fields: [classroomId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+// GPA.
+model GPA {
+  id        Int      @id @default(autoincrement())
+  studentId Int
+  student   Student  @relation(fields: [studentId], references: [id])
+  grade     String
+  subjectId Int
+  subject   Subject  @relation(fields: [subjectId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
